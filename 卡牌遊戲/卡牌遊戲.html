@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>九宮格卡牌遊戲 (新規則)</title>
+    <style>
+        /* 整體頁面樣式 */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+
+        /* 遊戲主容器 */
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px; /* 卡片間的間距 */
+            width: 450px;
+            height: 450px;
+            perspective: 1000px; /* 設置3D變換的視角深度 */
+        }
+
+        /* 單張卡牌樣式 */
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d; /* 使子元素可以在3D空間中定位 */
+            transition: transform 0.6s; /* 翻轉動畫的時間 */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* 當卡牌被點擊時，添加 .flipped class 來觸發翻轉 */
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        /* 卡牌的正面與背面共用樣式 */
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden; /* 隱藏旋轉到背後的元素 */
+            border-radius: 10px;
+            overflow: hidden; /* 確保圖片不會超出圓角邊框 */
+        }
+
+        /* 卡牌背面樣式 */
+        .card-back {
+            background-color: #4a90e2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 48px;
+            color: white;
+        }
+        
+        /* 卡牌正面（圖片）樣式 */
+        .card-front {
+            background-color: #ffffff;
+            transform: rotateY(180deg); /* 預先翻轉180度，使其在背面 */
+        }
+
+        .card-front img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 確保圖片填滿容器且不變形 */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container" id="game-board">
+        <!-- 卡牌將由 JavaScript 動態生成 -->
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const gameBoard = document.getElementById('game-board');
+            
+            // 圖片來源陣列，請確保圖片檔名與此處相符
+            const images = ['1.jpg', '2.jpg', '3.jpg'];
+            
+            // 建立一個包含9張卡牌的陣列（每張圖片重複3次）
+            let cardArray = [];
+            for (let i = 0; i < 3; i++) {
+                cardArray.push(images[0]);
+                cardArray.push(images[1]);
+                cardArray.push(images[2]);
+            }
+
+            // 洗牌演算法 (Fisher-Yates Shuffle)
+            function shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]]; // 交換元素
+                }
+            }
+
+            // 將卡牌陣列隨機排序
+            shuffle(cardArray);
+
+            // 動態生成9張卡牌並添加到遊戲盤面
+            for (let i = 0; i < cardArray.length; i++) {
+                // 創建卡牌容器
+                const card = document.createElement('div');
+                card.classList.add('card');
+                
+                // 創建卡牌正面 (圖片)
+                const cardFront = document.createElement('div');
+                cardFront.classList.add('card-face', 'card-front');
+                const img = document.createElement('img');
+                img.src = cardArray[i]; // 設置圖片路徑
+                cardFront.appendChild(img);
+
+                // 創建卡牌背面 (問號)
+                const cardBack = document.createElement('div');
+                cardBack.classList.add('card-face', 'card-back');
+                cardBack.textContent = '?'; // 初始狀態有問號
+
+                // 將正面與背面加入卡牌
+                card.appendChild(cardFront);
+                card.appendChild(cardBack);
+                
+                // 為每張卡牌添加點擊事件
+                card.addEventListener('click', () => {
+                    // *** 全新的邏輯 ***
+                    // 根據卡牌當前的翻轉狀態來決定問號的顯示或隱藏
+                    if (card.classList.contains('flipped')) {
+                        // 如果卡牌是正面 (已翻轉)，代表即將要翻回背面
+                        // 所以在翻轉前，把問號加回去
+                        cardBack.textContent = '?';
+                    } else {
+                        // 如果卡牌是背面，代表即將要翻到正面
+                        // 所以在翻轉前，把問號移除
+                        cardBack.textContent = '';
+                    }
+                    
+                    // 切換 .flipped class 來觸發CSS翻轉動畫
+                    card.classList.toggle('flipped');
+                });
+                
+                // 將完成的卡牌添加到遊戲盤面
+                gameBoard.appendChild(card);
+            }
+        });
+    </script>
+
+</body>
+</html>
